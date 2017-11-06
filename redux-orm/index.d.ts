@@ -1,0 +1,214 @@
+declare module 'redux-orm' {
+
+  interface IORMId {
+    id: string
+  }
+
+  interface ITableState<Item = any, Meta = any> {
+    items: string[],
+    itemsById: { [index: string]: Item },
+    meta: Meta
+  }
+
+  interface IResourceCommonState {
+    [index: string]: ITableState
+  }
+
+  type ISession<State extends IResourceCommonState> = Session<State> & { [P in keyof State]: typeof Model }
+
+  type IModel<Fields, Additional = {}, VirtualFields = {}> = Model<Fields, Additional, VirtualFields> & Fields & VirtualFields & Additional & IORMId
+
+  // TODO: Refine me
+  type IModelProps = any
+
+  // TODO: Refine me
+  interface IDB {
+    getEmptyState: any,
+    query: any,
+    update: any,
+    describe: any
+  }
+
+  // TODO: Refine me
+  interface ISchemaSpec {
+    tables: any
+  }
+
+  // TODO: Refine me
+  interface IORMOpts {
+    createDatabase: (schemaSpec: ISchemaSpec) => any
+  }
+
+  interface IModelFields {
+    [index: string]: Attribute | ForeignKey | ManyToMany | OneToOne
+  }
+
+  interface IModelVirtualFields {
+    [index: string]: any
+  }
+
+  export class ORM<State extends IResourceCommonState = IResourceCommonState> {
+    constructor(opts?: IORMOpts)
+    register(...model: Array<typeof Model>): void
+    register<M>(...model: Array<M[keyof M]>): void
+    registerManyToManyModelsFor(model: typeof Model): void
+    get(modelName: string): typeof Model
+    getModelClasses(): Array<typeof Model>
+    isFieldInstalled(modelName: string, fieldName: string): boolean
+    setFieldInstalled(modelName: string, fieldName: string): void
+    generateSchemaSpec(): ISchemaSpec
+    getDatabase(): IDB
+    getEmptyState(): State
+    session(state: State): ISession<State>
+    mutableSession(state: State): ISession<State>
+
+    private _attachQuerySetMethods(model: typeof Model): void
+    private _setupModelPrototypes(models: Array<typeof Model>): void
+  }
+
+  export class Model<Fields, Additional = {}, VirtualFields = {}> {
+    static readonly idAttribute: string
+    static readonly session: ISession<any>
+    static readonly _sessionData: any // TODO
+    static readonly query: QuerySet<any, any>
+
+    static modelName: string
+    static fields: IModelFields
+    static virtualFields: IModelVirtualFields
+    static querySetClass: typeof QuerySet
+
+    static toString(): string
+    static options<T = object>(): T
+    static _getTableOpts<T = object>(): T
+    static markAccessed(): void
+    static connect<State extends IResourceCommonState>(session: Session<State>): void
+    static getQuerySet<T extends QuerySet<any, any> = QuerySet<any, any>>(): T
+    static invalidateClassCache(): void
+    static all<QueryModelType, Fields, Additional = {}, VirtualFields = {}>(): QuerySet<QueryModelType, Fields, Additional, VirtualFields>
+    static create<Fields, Additional = {}, VirtualFields = {}>(props: Fields): IModel<Fields, Additional, VirtualFields>
+    static upsert<Fields, Additional = {}, VirtualFields = {}>(props: Partial<Fields>): IModel<Fields, Additional, VirtualFields>
+    static withId<Fields, Additional = {}, VirtualFields = {}>(id: string): IModel<Fields, Additional, VirtualFields>
+    static hasId(id: string): boolean
+    static _findDatabaseRows(lookupObj: object): any // TODO
+    static get<Fields, Additional = {}, VirtualFields = {}>(lookupObj: Object): IModel<Fields, Additional, VirtualFields>
+    static reducer<State extends IResourceCommonState>(session: ISession<State>, action: any): any
+
+    readonly ref: Fields & Additional & IORMId
+
+    constructor(props: IModelProps)
+
+    getClass(): string
+    getId(): string
+    toString(): string
+    equals<OtherFields, OtherAdditional = {}, OtherVirtualFields = {}>(otherModel: IModel<OtherFields, OtherAdditional, OtherVirtualFields>): boolean
+    set<T = any>(propertyName: string, value: T): void
+    update(userMergeObj: Partial<Fields & Additional>): void
+    refreshFromState(): void
+    delete(): void
+
+    private _onDelete(): void
+    private _initFields(props: IModelProps): void
+    private _refreshMany2Many(relations: any): void //TODO
+  }
+
+  type IQuerySetClauses = any // TODO
+  type IQuerySetOpts = any // TODO
+
+  class QuerySet<QueryModelType, Fields, Additional = {}, VirtualFields = {}> {
+    static addSharedMethod(methodName: string): void
+
+    constructor(modelClass: QueryModelType, clauses: IQuerySetClauses, opts: IQuerySetOpts)
+
+    toString(): string
+    toRefArray(): Array<Fields & Additional & IORMId>
+    toModelArray(): Array<QueryModelType>
+    count(): number
+    exists(): boolean
+    at(index: string): IModel<Fields, Additional, VirtualFields> | undefined
+    first(): IModel<Fields, Additional, VirtualFields> | undefined
+    last(): IModel<Fields, Additional, VirtualFields> | undefined
+    all(): QuerySet<QueryModelType, Fields, Additional, VirtualFields>
+    filter(lookupObj: object): QuerySet<QueryModelType, Fields, Additional, VirtualFields> // TODO
+    exclude(lookupObj: object): QuerySet<QueryModelType, Fields, Additional, VirtualFields> // TODO
+    orderBy(iteratees: any, orders: any): QuerySet<QueryModelType, Fields, Additional, VirtualFields> // TODO
+    update(mergeObj: Partial<Fields & Additional>): void
+    delete(): void
+
+    private _evaluate(): void
+    private _new(clauses: IQuerySetClauses, userOpts: IQuerySetOpts): QuerySet<QueryModelType, Fields, Additional, VirtualFields>
+  }
+
+  export class Session<State extends IResourceCommonState> {
+    readonly accessedModels: string[]
+    schema: ORM<State>
+    db: IDB
+    initialState: State
+    withMutations: boolean
+    batchToken: any
+    sessionBoundModels: Array<typeof Model>
+    models: Array<typeof Model>
+    state: State
+
+    constructor(schema: ORM<State>, db: IDB, state: State, withMutations: boolean, batchToken: any) // TODO
+    
+    markAccessed(modelName: string): void
+    getDataForModel(modelName: string): object
+    applyUpdate(updateSpec: any): any // TODO
+    query(querySpec: any): any // TODO
+  }
+
+  interface IAttributeOpts {
+    getDefault?: () => any
+  }
+
+  export class Attribute {
+    constructor (opts: IAttributeOpts)
+    install(model: typeof Model, fieldName: string, orm: ORM): void
+  }
+
+  interface IRelationalFieldOpts {
+    to: string,
+    relatedName?: string,
+    through?: string,
+    throughFields?: {
+      to: string,
+      from: string
+    }
+  }
+
+  export class RelationalField {
+    constructor (toModelName: string, relatedName?: string)
+    constructor (opts: IRelationalFieldOpts)
+    getClass: typeof RelationalField
+  }
+
+  export class ForeignKey extends RelationalField {
+    install(model: typeof Model, fieldName: string, orm: ORM): void
+  }
+
+  export class ManyToMany extends RelationalField {
+    install(model: typeof Model, fieldName: string, orm: ORM): void
+  }
+
+  export class OneToOne extends RelationalField {
+    install(model: typeof Model, fieldName: string, orm: ORM): void
+  }
+
+  export function attr(opts?: IAttributeOpts): Attribute
+
+  export function fk(toModelName: string, relatedName?: string): ForeignKey
+  export function fk(opts: IRelationalFieldOpts): ForeignKey
+
+  export function many(opts: IRelationalFieldOpts): ManyToMany
+
+  export function oneToOne(toModelName: string, relatedName?: string): OneToOne
+  export function oneToOne(opts: IRelationalFieldOpts): OneToOne
+
+  type IUpdater<State extends IResourceCommonState> = (session: ISession<State>, action: any) => any
+
+  export function createReducer<State extends IResourceCommonState = IResourceCommonState>(orm: ORM<State>, updater?: IUpdater<State>): State
+
+  type IORMSelector<State extends IResourceCommonState, Result = any> = (session: ISession<State>, ...args: any[]) => Result
+
+  export function createSelector<State extends IResourceCommonState = IResourceCommonState, Result = any>(orm: ORM<State>, ...args: IORMSelector<State>[]): Result
+}

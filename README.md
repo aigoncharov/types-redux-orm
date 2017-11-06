@@ -11,6 +11,23 @@ It's an alpha version of types I currently use in one of my projects. They will 
 01/13/18 - Beta release
 02/03/18 - Stable release and merge into [DefinitelyTyped](https://github.com/DefinitelyTyped/DefinitelyTyped)
 
+## Install
+
+```
+npm install types-redux-orm
+```
+
+Modify your tsconfig.json as following:
+
+```
+...
+"typeRoots": [
+      "./node_modules/types-redux-orm",
+      "./node_modules/@types"
+    ],
+...
+```
+
 ## Recipes
 
 ### Model

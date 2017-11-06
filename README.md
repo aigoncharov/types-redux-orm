@@ -33,7 +33,7 @@ Modify your tsconfig.json as following:
 ### Model
 
 ```javascript
-import { attr, IORMId, IResourceCommonState, ITableState, Model, ORM } from 'redux-orm'
+import { attr, IORMCommonState, IORMId, ITableState, Model, ORM } from 'redux-orm'
 
 export class Test extends Model<ITestStateItem, IFetchIndicatorState> {
   static modelName = 'Test'
@@ -58,7 +58,7 @@ export interface IFetchIndicatorState {
 // id attr is added automatically by redux-orm therefore we have IORMId interface
 export type ITestState = ITableState<ITestStateItem & IORMId & IFetchIndicatorState>
 
-export interface ITestORMState extends IResourceCommonState {
+export interface ITestORMState extends IORMCommonState {
   Test: ITestState
 }
 
@@ -98,7 +98,7 @@ type ITestDisplayItemList = ITestDisplayItem[]
 export const makeGetTestDisplayList = () => {
   const ormSelector = createSelectorORM<ITestORMState>(orm, (session: ISession<ITestORMState>) =>
     session.Test
-      .all<typeof Test, ITestStateItem, IFetchIndicatorState>()
+      .all<ITestStateItem, IFetchIndicatorState>()
       .toRefArray()
       .map((item) => ({ ...item }))
   })

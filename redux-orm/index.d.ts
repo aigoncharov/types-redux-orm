@@ -10,11 +10,11 @@ declare module 'redux-orm' {
     meta: Meta
   }
 
-  interface IResourceCommonState {
+  interface IORMCommonState {
     [index: string]: ITableState
   }
 
-  type ISession<State extends IResourceCommonState> = Session<State> & { [P in keyof State]: typeof Model }
+  type ISession<State extends IORMCommonState> = Session<State> & { [P in keyof State]: typeof Model }
 
   type IModel<Fields, Additional = {}, VirtualFields = {}> = Model<Fields, Additional, VirtualFields> & Fields & VirtualFields & Additional & IORMId
 
@@ -47,7 +47,7 @@ declare module 'redux-orm' {
     [index: string]: any
   }
 
-  export class ORM<State extends IResourceCommonState = IResourceCommonState> {
+  export class ORM<State extends IORMCommonState = IORMCommonState> {
     constructor(opts?: IORMOpts)
     register(...model: Array<typeof Model>): void
     register<M>(...model: Array<M[keyof M]>): void
@@ -70,7 +70,7 @@ declare module 'redux-orm' {
     static readonly idAttribute: string
     static readonly session: ISession<any>
     static readonly _sessionData: any // TODO
-    static readonly query: QuerySet<any, any>
+    static readonly query: QuerySet<any>
 
     static modelName: string
     static fields: IModelFields
@@ -81,17 +81,17 @@ declare module 'redux-orm' {
     static options<T = object>(): T
     static _getTableOpts<T = object>(): T
     static markAccessed(): void
-    static connect<State extends IResourceCommonState>(session: Session<State>): void
-    static getQuerySet<T extends QuerySet<any, any> = QuerySet<any, any>>(): T
+    static connect<State extends IORMCommonState>(session: Session<State>): void
+    static getQuerySet<T extends QuerySet<any> = QuerySet<any>>(): T
     static invalidateClassCache(): void
-    static all<QueryModelType, Fields, Additional = {}, VirtualFields = {}>(): QuerySet<QueryModelType, Fields, Additional, VirtualFields>
+    static all<Fields, Additional = {}, VirtualFields = {}>(): QuerySet<Fields, Additional, VirtualFields>
     static create<Fields, Additional = {}, VirtualFields = {}>(props: Fields): IModel<Fields, Additional, VirtualFields>
     static upsert<Fields, Additional = {}, VirtualFields = {}>(props: Partial<Fields>): IModel<Fields, Additional, VirtualFields>
     static withId<Fields, Additional = {}, VirtualFields = {}>(id: string): IModel<Fields, Additional, VirtualFields>
     static hasId(id: string): boolean
     static _findDatabaseRows(lookupObj: object): any // TODO
     static get<Fields, Additional = {}, VirtualFields = {}>(lookupObj: Object): IModel<Fields, Additional, VirtualFields>
-    static reducer<State extends IResourceCommonState>(session: ISession<State>, action: any): any
+    static reducer<State extends IORMCommonState>(session: ISession<State>, action: any): any
 
     readonly ref: Fields & Additional & IORMId
 
@@ -114,31 +114,31 @@ declare module 'redux-orm' {
   type IQuerySetClauses = any // TODO
   type IQuerySetOpts = any // TODO
 
-  class QuerySet<QueryModelType, Fields, Additional = {}, VirtualFields = {}> {
+  class QuerySet<Fields, Additional = {}, VirtualFields = {}> {
     static addSharedMethod(methodName: string): void
 
-    constructor(modelClass: QueryModelType, clauses: IQuerySetClauses, opts: IQuerySetOpts)
+    constructor(modelClass: typeof Model, clauses: IQuerySetClauses, opts: IQuerySetOpts)
 
     toString(): string
     toRefArray(): Array<Fields & Additional & IORMId>
-    toModelArray(): Array<QueryModelType>
+    toModelArray(): Array<IModel<Fields, Additional, VirtualFields>>
     count(): number
     exists(): boolean
     at(index: string): IModel<Fields, Additional, VirtualFields> | undefined
     first(): IModel<Fields, Additional, VirtualFields> | undefined
     last(): IModel<Fields, Additional, VirtualFields> | undefined
-    all(): QuerySet<QueryModelType, Fields, Additional, VirtualFields>
-    filter(lookupObj: object): QuerySet<QueryModelType, Fields, Additional, VirtualFields> // TODO
-    exclude(lookupObj: object): QuerySet<QueryModelType, Fields, Additional, VirtualFields> // TODO
-    orderBy(iteratees: any, orders: any): QuerySet<QueryModelType, Fields, Additional, VirtualFields> // TODO
+    all(): QuerySet<Fields, Additional, VirtualFields>
+    filter(lookupObj: object): QuerySet<Fields, Additional, VirtualFields> // TODO
+    exclude(lookupObj: object): QuerySet<Fields, Additional, VirtualFields> // TODO
+    orderBy(iteratees: any, orders: any): QuerySet<Fields, Additional, VirtualFields> // TODO
     update(mergeObj: Partial<Fields & Additional>): void
     delete(): void
 
     private _evaluate(): void
-    private _new(clauses: IQuerySetClauses, userOpts: IQuerySetOpts): QuerySet<QueryModelType, Fields, Additional, VirtualFields>
+    private _new(clauses: IQuerySetClauses, userOpts: IQuerySetOpts): QuerySet<Fields, Additional, VirtualFields>
   }
 
-  export class Session<State extends IResourceCommonState> {
+  export class Session<State extends IORMCommonState> {
     readonly accessedModels: string[]
     schema: ORM<State>
     db: IDB
@@ -204,11 +204,11 @@ declare module 'redux-orm' {
   export function oneToOne(toModelName: string, relatedName?: string): OneToOne
   export function oneToOne(opts: IRelationalFieldOpts): OneToOne
 
-  type IUpdater<State extends IResourceCommonState> = (session: ISession<State>, action: any) => any
+  type IUpdater<State extends IORMCommonState> = (session: ISession<State>, action: any) => any
 
-  export function createReducer<State extends IResourceCommonState = IResourceCommonState>(orm: ORM<State>, updater?: IUpdater<State>): State
+  export function createReducer<State extends IORMCommonState = IORMCommonState>(orm: ORM<State>, updater?: IUpdater<State>): State
 
-  type IORMSelector<State extends IResourceCommonState, Result = any> = (session: ISession<State>, ...args: any[]) => Result
+  type IORMSelector<State extends IORMCommonState, Result = any> = (session: ISession<State>, ...args: any[]) => Result
 
-  export function createSelector<State extends IResourceCommonState = IResourceCommonState, Result = any>(orm: ORM<State>, ...args: IORMSelector<State>[]): Result
+  export function createSelector<State extends IORMCommonState = IORMCommonState, Result = any>(orm: ORM<State>, ...args: IORMSelector<State>[]): Result
 }

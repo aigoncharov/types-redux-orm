@@ -1,6 +1,6 @@
 {
   "name": "types-redux-orm",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Typescript types for Redux-ORM",
   "main": "",
   "repository": {

@@ -210,5 +210,5 @@ declare module 'redux-orm' {
 
   type IORMSelector<State extends IORMCommonState, Result = any> = (session: ISession<State>, ...args: any[]) => Result
 
-  export function createSelector<State extends IORMCommonState = IORMCommonState, Result = any>(orm: ORM<State>, ...args: IORMSelector<State>[]): Result
+  export function createSelector<State extends IORMCommonState = IORMCommonState, Result = any>(orm: ORM<State>, ...args: IORMSelector<State>[]): (state: State) => Result
 }

@@ -199,6 +199,8 @@ declare module 'redux-orm' {
   export function fk(toModelName: string, relatedName?: string): ForeignKey
   export function fk(opts: IRelationalFieldOpts): ForeignKey
 
+
+  export function many(toModelName: string, relatedName?: string): ManyToMany
   export function many(opts: IRelationalFieldOpts): ManyToMany
 
   export function oneToOne(toModelName: string, relatedName?: string): OneToOne

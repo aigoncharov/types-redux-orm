@@ -206,7 +206,7 @@ declare module 'redux-orm' {
 
   type IUpdater<State extends IORMCommonState> = (session: ISession<State>, action: any) => any
 
-  export function createReducer<State extends IORMCommonState = IORMCommonState>(orm: ORM<State>, updater?: IUpdater<State>): State
+  export function createReducer<State extends IORMCommonState = IORMCommonState>(orm: ORM<State>, updater?: IUpdater<State>): (state: State, action: any) => State
 
   type IORMSelector<State extends IORMCommonState, Result = any> = (session: ISession<State>, ...args: any[]) => Result
 

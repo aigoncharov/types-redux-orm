@@ -1,6 +1,6 @@
 # types-redux-orm
 
-Typescript types for [Redux Orm](https://github.com/tommikaikkonen/redux-orm)
+Typescript types for [Redux Orm 0.9.4](https://github.com/tommikaikkonen/redux-orm)
 
 ## Important
 

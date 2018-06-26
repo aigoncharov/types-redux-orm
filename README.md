@@ -1,4 +1,5 @@
 # types-redux-orm
+## NO LONGER SUPPORTED. USE [@types/redux-orm](https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/redux-orm) 
 
 Typescript types for [Redux Orm 0.9.4](https://github.com/tommikaikkonen/redux-orm)
 
